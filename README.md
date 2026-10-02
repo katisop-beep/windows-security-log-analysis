@@ -75,3 +75,68 @@ Security analysts should examine the surrounding context, including the source a
 - Windows Authentication
 - Basic SOC Investigation
 - Security Event Documentation
+
+
+## Investigation Evidence
+
+The following screenshots document the Windows Security log investigation and the process used to identify and analyse failed authentication events.
+
+### 1. Windows Security Log
+
+The Windows Security log was reviewed in Event Viewer to identify authentication-related security events.
+
+![Windows Security Log](screenshots/01-security-log-overview.png)
+
+### 2. Filtering for Event ID 4625
+
+The Security log was filtered for Event ID `4625`, which records failed account logon attempts.
+
+![Event ID 4625 Filter](screenshots/02-filter-event-id-4625.png)
+
+### 3. Failed Logon Events Identified
+
+Filtering revealed multiple Event ID 4625 audit failures. This provided a focused set of authentication failures for further investigation.
+
+![Filtered 4625 Failures](screenshots/03-filtered-4625-failures.png)
+
+### 4. Event 4625 Investigation
+
+An individual Event ID 4625 record was opened to examine the failed authentication attempt and its associated event information.
+
+![Event 4625 Details](screenshots/04-event-4625-general-details.png)
+
+### 5. Local Authentication Analysis
+
+One investigated event showed **Logon Type 2**, which represents an interactive logon. The event also contained authentication and process information that helped provide context for the failure.
+
+![Local Logon Analysis](screenshots/05-local-logon-type-2-localhost.png)
+
+### 6. Local IP Address Verification
+
+The `ipconfig` command was used to verify the computer's IPv4 configuration. The system was using IPv4 address `192.168.18.123` on the local network.
+
+![IP Configuration](screenshots/06-ipconfig-local-address.png)
+
+### 7. Network Authentication Analysis
+
+Another Event ID 4625 record showed **Logon Type 3**, representing a network logon attempt. The event used NTLM authentication and recorded an unsuccessful authentication attempt.
+
+![Network Logon Type 3](screenshots/07-network-logon-type-3-details.png)
+
+### 8. Source IP Correlation
+
+The network logon event recorded source IP address `192.168.18.123`. Comparing this value with the `ipconfig` results showed that the source address matched the investigated computer's own IPv4 address.
+
+This correlation is important because an IP address appearing in a failed authentication event should not automatically be treated as evidence of an external attacker. The source address, logon type, account, authentication package, process information, and surrounding events must be considered together.
+
+![Network Source IP](screenshots/08-network-source-ip-192-168-18-123.png)
+
+---
+
+## Investigation Conclusion
+
+The investigation identified multiple Windows Event ID 4625 failed authentication events and demonstrated how individual log records can be analysed using logon type, authentication package, status information, source address, and process data.
+
+The analysis also demonstrated the importance of correlating security logs with host and network information. In this case, comparison with the system's IP configuration showed that `192.168.18.123` belonged to the investigated computer itself, preventing the source address from being incorrectly interpreted as evidence of an external system.
+
+This lab demonstrates a basic SOC investigation workflow: identify relevant security events, filter the available data, inspect individual records, correlate evidence from multiple sources, document findings, and avoid drawing conclusions without sufficient context.
